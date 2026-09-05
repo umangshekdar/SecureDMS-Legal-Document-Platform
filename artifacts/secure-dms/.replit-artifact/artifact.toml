@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "SecureDMS"
+description = "A polished Smart India Hackathon prototype for secure, intelligent, traceable, and verifiable legal and investigative document management, with role-aware cases, document analysis, integrity verification, audit trails, and tamper simulation."
+version = "1.0.0"
+id = "artifacts/secure-dms"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18385
+
+[services.development]
+run = "pnpm --filter @workspace/secure-dms run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/secure-dms", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/secure-dms/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18385"
+BASE_PATH = "/"

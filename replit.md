@@ -1,10 +1,11 @@
-# [Project name]
+# SecureDMS
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+SecureDMS is a Smart India Hackathon prototype for secure, intelligent, traceable, and verifiable legal and investigative document management.
 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/secure-dms run dev` — run the SecureDMS web app
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -22,23 +23,32 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/secure-dms/src/App.tsx` — frontend routes, shell, and demo interactions
+- `artifacts/secure-dms/src/index.css` — SecureDMS visual system and responsive styles
+- `artifacts/api-server/src/routes/securedms.ts` — prototype API and seeded demo data
+- `lib/api-spec/openapi.yaml` — API contract source of truth
+- `lib/api-client-react/src/generated/` — generated React Query hooks
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The first build uses an in-memory API seed so the hackathon demo starts populated without requiring a production data service.
+- Integrity verification is deterministic SHA-256 over demo metadata and supports a real stateful tamper simulation.
+- AI/OCR output is clearly simulated and structured behind API fields that can later be replaced by OCR/LLM services.
+- Government ecosystem references are positioning-only; no CCTNS, ICJS, eSakshya, DEMS, or e-Courts integration is implemented.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The product provides prototype role-aware login, case management, document upload processing, SHA-256 integrity verification, tamper alerts, immutable version history, digital signature simulation, searchable OCR text, append-only audit logs, security analytics, and demo user management.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+The requested experience is a credible government/legal-tech dashboard for SIH demonstration, not a generic startup dashboard.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Demo authentication is intentionally local and should not be presented as production identity management.
+- The upload endpoint accepts metadata JSON for the prototype; it does not persist raw file bytes.
+- API routes are mounted below `/api` and the web artifact is served at `/`.
 
 ## Pointers
 

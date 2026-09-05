@@ -1,0 +1,1 @@
+- [Orval integer schemas](orval-zod-compatibility.md) — this workspace's generated Zod target is Zod 3; numeric OpenAPI fields should use number rather than integer.

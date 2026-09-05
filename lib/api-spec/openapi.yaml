@@ -3,20 +3,31 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: SecureDMS prototype API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Prototype authentication
+  - name: dashboard
+    description: Dashboard summaries
+  - name: cases
+    description: Case management
+  - name: documents
+    description: Document intelligence and integrity
+  - name: audit
+    description: Append-only audit trail
+  - name: users
+    description: Demo user management
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +35,420 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Sign in with prototype credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "401":
+          description: Invalid credentials
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get dashboard overview
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /cases:
+    get:
+      operationId: getCases
+      tags: [cases]
+      summary: List cases
+      parameters:
+        - $ref: "#/components/parameters/Status"
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Case list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Case"
+    post:
+      operationId: createCase
+      tags: [cases]
+      summary: Create a case
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaseInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+  /cases/{id}:
+    get:
+      operationId: getCase
+      tags: [cases]
+      summary: Get a case
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Case details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseDetails"
+        "404":
+          description: Case not found
+  /documents:
+    get:
+      operationId: getDocuments
+      tags: [documents]
+      summary: List documents
+      parameters:
+        - $ref: "#/components/parameters/CaseId"
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Document list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document"
+    post:
+      operationId: uploadDocument
+      tags: [documents]
+      summary: Upload a demo document and run the processing pipeline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentInput"
+      responses:
+        "201":
+          description: Processed document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+  /documents/{id}:
+    get:
+      operationId: getDocument
+      tags: [documents]
+      summary: Get document detail
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Document detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentDetail"
+  /documents/{id}/verify:
+    post:
+      operationId: verifyDocument
+      tags: [documents]
+      summary: Verify document integrity
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntegrityResult"
+  /documents/{id}/tamper-test:
+    post:
+      operationId: tamperTestDocument
+      tags: [documents]
+      summary: Simulate content tampering
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Tamper result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntegrityResult"
+  /documents/{id}/versions:
+    get:
+      operationId: getDocumentVersions
+      tags: [documents]
+      summary: Get immutable version history
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Version history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DocumentVersion"
+  /audit-logs:
+    get:
+      operationId: getAuditLogs
+      tags: [audit]
+      summary: Get append-only audit records
+      responses:
+        "200":
+          description: Audit records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLog"
+  /search:
+    get:
+      operationId: searchDocuments
+      tags: [documents]
+      summary: Search documents with keyword relevance
+      parameters:
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SearchResult"
+  /users:
+    get:
+      operationId: getUsers
+      tags: [users]
+      summary: List demo users
+      responses:
+        "200":
+          description: Users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+    CaseId:
+      name: caseId
+      in: query
+      schema: { type: string }
+    Search:
+      name: q
+      in: query
+      schema: { type: string }
+    Status:
+      name: status
+      in: query
+      schema: { type: string }
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string }
+        password: { type: string }
+    AuthSession:
+      type: object
+      required: [user, prototype]
+      properties:
+        user: { $ref: "#/components/schemas/User" }
+        prototype: { type: boolean }
+    User:
+      type: object
+      required: [id, name, email, role, initials, active]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string }
+        initials: { type: string }
+        active: { type: boolean }
+    CaseInput:
+      type: object
+      required: [title, category, station]
+      properties:
+        title: { type: string }
+        category: { type: string }
+        station: { type: string }
+    Case:
+      type: object
+      required: [id, title, category, station, officer, opened, status, documents, activity]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        category: { type: string }
+        station: { type: string }
+        officer: { type: string }
+        opened: { type: string }
+        status: { type: string }
+        documents: { type: number }
+        activity: { type: string }
+    CaseDetails:
+      allOf:
+        - $ref: "#/components/schemas/Case"
+        - type: object
+          required: [description, assigned, dates]
+          properties:
+            description: { type: string }
+            assigned:
+              type: array
+              items: { type: string }
+            dates:
+              type: array
+              items:
+                type: object
+                required: [label, value]
+                properties:
+                  label: { type: string }
+                  value: { type: string }
+    DocumentInput:
+      type: object
+      required: [caseId, title, type, fileName]
+      properties:
+        caseId: { type: string }
+        title: { type: string }
+        type: { type: string }
+        fileName: { type: string }
+        description: { type: string }
+        confidentiality: { type: string }
+    Document:
+      type: object
+      required: [id, caseId, title, type, fileName, version, uploadedBy, date, integrity, signature, hash, classification, confidence, size]
+      properties:
+        id: { type: string }
+        caseId: { type: string }
+        title: { type: string }
+        type: { type: string }
+        fileName: { type: string }
+        version: { type: string }
+        uploadedBy: { type: string }
+        date: { type: string }
+        integrity: { type: string }
+        signature: { type: string }
+        hash: { type: string }
+        classification: { type: string }
+        confidence: { type: number }
+        size: { type: string }
+        confidentiality: { type: string }
+    DocumentDetail:
+      allOf:
+        - $ref: "#/components/schemas/Document"
+        - type: object
+          required: [ocrText, originalHash, currentHash, versions, signedBy]
+          properties:
+            ocrText: { type: string }
+            originalHash: { type: string }
+            currentHash: { type: string }
+            signedBy: { type: string }
+            versions:
+              type: array
+              items: { $ref: "#/components/schemas/DocumentVersion" }
+    DocumentVersion:
+      type: object
+      required: [version, createdBy, timestamp, hash, change, integrity]
+      properties:
+        version: { type: string }
+        createdBy: { type: string }
+        timestamp: { type: string }
+        hash: { type: string }
+        change: { type: string }
+        integrity: { type: string }
+    IntegrityResult:
+      type: object
+      required: [documentId, status, originalHash, currentHash, message]
+      properties:
+        documentId: { type: string }
+        status: { type: string }
+        originalHash: { type: string }
+        currentHash: { type: string }
+        message: { type: string }
+    AuditLog:
+      type: object
+      required: [id, timestamp, user, role, action, caseId, document, device, status]
+      properties:
+        id: { type: string }
+        timestamp: { type: string }
+        user: { type: string }
+        role: { type: string }
+        action: { type: string }
+        caseId: { type: string }
+        document: { type: string }
+        device: { type: string }
+        status: { type: string }
+    SearchResult:
+      type: object
+      required: [document, score, match]
+      properties:
+        document: { $ref: "#/components/schemas/Document" }
+        score: { type: number }
+        match: { type: string }
+    Dashboard:
+      type: object
+      required: [metrics, uploads, activity, security]
+      properties:
+        metrics:
+          type: object
+          required: [activeCases, totalDocuments, pendingReviews, verified, alerts, addedToday]
+          properties:
+            activeCases: { type: number }
+            totalDocuments: { type: number }
+            pendingReviews: { type: number }
+            verified: { type: number }
+            alerts: { type: number }
+            addedToday: { type: number }
+        uploads:
+          type: array
+          items:
+            type: object
+            required: [day, count]
+            properties:
+              day: { type: string }
+              count: { type: number }
+        activity:
+          type: array
+          items: { $ref: "#/components/schemas/AuditLog" }
+        security:
+          type: object
+          required: [score, signed, encrypted]
+          properties:
+            score: { type: number }
+            signed: { type: number }
+            encrypted: { type: number }
 
